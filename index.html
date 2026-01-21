@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Classify</title>
+		<link rel="stylesheet" href="styles.css" />
+	</head>
+	<body>
+		<div class="app">
+			<aside class="sidebar">
+				<div class="sidebar__top">
+					<a class="brand" href="#dashboard">Classify</a>
+				</div>
+
+				<nav class="nav">
+					<a class="nav__item" href="#dashboard">
+						Dashboard
+					</a>
+				</nav>
+
+				<div class="sidebar__bottom">
+					<div class="sidebar__credit">Made with ❤️ By Armaan J</div>
+				</div>
+			</aside>
+
+			<main class="main">
+				<header class="topbar">
+					<div class="topbar__title">
+						<h1>Dashboard</h1>
+					</div>
+				</header>
+
+				<section id="dashboard" class="page">
+					<div class="page__header">
+						<h2>Classes</h2>
+					</div>
+
+					<div class="card-grid">
+						<article class="class-card">
+							<div class="class-card__inner">
+								<div class="gauge">
+									<div class="gauge__arc"></div>
+									<div class="gauge__value">0%</div>
+								</div>
+								<div class="class-card__name">Math</div>
+							</div>
+						</article>
+
+						<article class="class-card">
+							<div class="class-card__inner">
+								<div class="gauge">
+									<div class="gauge__arc"></div>
+									<div class="gauge__value">0%</div>
+								</div>
+								<div class="class-card__name">Science</div>
+							</div>
+						</article>
+
+						<article class="class-card">
+							<div class="class-card__inner">
+								<div class="gauge">
+									<div class="gauge__arc"></div>
+									<div class="gauge__value">0%</div>
+								</div>
+								<div class="class-card__name">English</div>
+							</div>
+						</article>
+
+						<article class="class-card">
+							<div class="class-card__inner">
+								<div class="gauge">
+									<div class="gauge__arc"></div>
+									<div class="gauge__value">0%</div>
+								</div>
+								<div class="class-card__name">Comp Sci</div>
+							</div>
+						</article>
+
+						<article class="class-card class-card--add">
+							<div class="class-card__inner">
+								<input class="add-input" type="text" placeholder="Enter Subject" disabled />
+								<button class="add-btn" type="button" disabled>Add Class</button>
+							</div>
+						</article>
+					</div>
+				</section>
+
+			</main>
+		</div>
+
+		<script src="script.js"></script>
+	</body>
+</html>
