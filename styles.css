@@ -26,6 +26,10 @@ body {
 	background: var(--bg);
 }
 
+.hidden {
+	display: none;
+}
+
 .app {
 	min-height: 100vh;
 	display: grid;
@@ -122,6 +126,24 @@ body {
 	color: #0b1736;
 }
 
+.back {
+	display: inline-block;
+	color: #2563eb;
+	text-decoration: none;
+	font-weight: 600;
+	margin-bottom: 18px;
+}
+
+.back:hover {
+	text-decoration: underline;
+}
+
+.class-title {
+	margin: 0 0 10px;
+	font-size: 54px;
+	letter-spacing: -0.03em;
+}
+
 .card-grid {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(240px, 1fr));
@@ -137,6 +159,10 @@ body {
 	border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
+.class-card:not(.class-card--add) {
+	cursor: pointer;
+}
+
 .class-card__inner {
 	border-radius: 14px;
 	height: 240px;
@@ -144,6 +170,35 @@ body {
 	place-items: center;
 	background: #fff;
 	border: 1px solid rgba(0, 0, 0, 0.08);
+	position: relative;
+}
+
+.delete-btn {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	border: 1px solid rgba(0, 0, 0, 0.2);
+	background: #fff;
+	color: #111;
+	border-radius: 8px;
+	padding: 6px;
+	font-weight: 600;
+	font-size: 14px;
+	line-height: 1;
+	cursor: pointer;
+	transition: box-shadow 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.delete-btn svg {
+	width: 20px;
+    height: 20px;
+	pointer-events: none;
+}
+
+.delete-btn:hover {
+	border-color: rgba(220, 38, 38, 0.6);
+	color: #dc2626;
+	box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.18), 0 0 18px rgba(220, 38, 38, 0.35);
 }
 
 .gauge {
@@ -204,6 +259,14 @@ body {
 	color: rgba(15, 23, 42, 0.35);
 	font-weight: 800;
 	font-size: 20px;
+	cursor: pointer;
+	transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.add-btn:hover {
+	background: #fff;
+	border-color: rgba(0, 0, 0, 0.15);
+	color: #111;
 }
 
 .add-input:disabled,

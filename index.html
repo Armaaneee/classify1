@@ -36,54 +36,19 @@
 						<h2>Classes</h2>
 					</div>
 
-					<div class="card-grid">
-						<article class="class-card">
+					<div class="card-grid" id="classGrid">
+						<article class="class-card class-card--add" id="addCard">
 							<div class="class-card__inner">
-								<div class="gauge">
-									<div class="gauge__arc"></div>
-									<div class="gauge__value">0%</div>
-								</div>
-								<div class="class-card__name">Math</div>
-							</div>
-						</article>
-
-						<article class="class-card">
-							<div class="class-card__inner">
-								<div class="gauge">
-									<div class="gauge__arc"></div>
-									<div class="gauge__value">0%</div>
-								</div>
-								<div class="class-card__name">Science</div>
-							</div>
-						</article>
-
-						<article class="class-card">
-							<div class="class-card__inner">
-								<div class="gauge">
-									<div class="gauge__arc"></div>
-									<div class="gauge__value">0%</div>
-								</div>
-								<div class="class-card__name">English</div>
-							</div>
-						</article>
-
-						<article class="class-card">
-							<div class="class-card__inner">
-								<div class="gauge">
-									<div class="gauge__arc"></div>
-									<div class="gauge__value">0%</div>
-								</div>
-								<div class="class-card__name">Comp Sci</div>
-							</div>
-						</article>
-
-						<article class="class-card class-card--add">
-							<div class="class-card__inner">
-								<input class="add-input" type="text" placeholder="Enter Subject" disabled />
-								<button class="add-btn" type="button" disabled>Add Class</button>
+								<input class="add-input" id="addClassInput" type="text" placeholder="Enter Subject" />
+								<button class="add-btn" id="addClassBtn" type="button">Add Class</button>
 							</div>
 						</article>
 					</div>
+				</section>
+
+				<section id="classView" class="page hidden">
+					<a class="back" href="#">← Back to Classes</a>
+					<h2 class="class-title" id="classTitle"></h2>
 				</section>
 
 			</main>
