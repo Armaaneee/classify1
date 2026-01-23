@@ -49,6 +49,31 @@
 				<section id="classView" class="page hidden">
 					<a class="back" href="#">← Back to Classes</a>
 					<h2 class="class-title" id="classTitle"></h2>
+					<div class="class-summary">
+						<div class="summary-title">Class Average: <span id="classAverage">0%</span></div>
+						<div class="summary-bar">
+							<div class="summary-fill" id="classAverageFill"></div>
+						</div>
+					</div>
+
+					<div class="grades">
+						<h3>Grades</h3>
+						<div class="grades-table">
+							<div class="grades-head">
+								<div>Assignment</div>
+								<div>Grade</div>
+								<div>Weighting</div>
+								<div>Actions</div>
+							</div>
+							<div class="grades-input">
+								<input id="assignmentName" type="text" placeholder="Enter assignment name" />
+								<input id="assignmentGrade" type="number" min="0" max="100" placeholder="Enter grade (%)" />
+								<input id="assignmentWeight" type="number" min="0" max="100" placeholder="Enter weighting (%)" />
+								<button id="addAssignmentBtn" type="button">+</button>
+							</div>
+							<div class="grades-list" id="gradesList"></div>
+						</div>
+					</div>
 				</section>
 
 			</main>

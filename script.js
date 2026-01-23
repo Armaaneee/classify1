@@ -6,10 +6,23 @@ const dashboard = document.getElementById("dashboard")
 const classView = document.getElementById("classView")
 const classTitle = document.getElementById("classTitle")
 const backLink = classView ? classView.querySelector(".back") : null
+const topbar = document.querySelector(".topbar")
+const classAverage = document.getElementById("classAverage")
+const classAverageFill = document.getElementById("classAverageFill")
+const assignmentName = document.getElementById("assignmentName")
+const assignmentGrade = document.getElementById("assignmentGrade")
+const assignmentWeight = document.getElementById("assignmentWeight")
+const addAssignmentBtn = document.getElementById("addAssignmentBtn")
+const gradesList = document.getElementById("gradesList")
+
+const classes = []
+let activeClassId = null
 
 function makeClassCard(name) {
+	const id = "c" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
 	const card = document.createElement("article")
 	card.className = "class-card"
+	card.dataset.classId = id
 
 	const inner = document.createElement("div")
 	inner.className = "class-card__inner"
@@ -21,9 +34,22 @@ function makeClassCard(name) {
 		`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`
 	const gauge = document.createElement("div")
 	gauge.className = "gauge"
+	const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg")
+	svg.setAttribute("viewBox", "0 0 100 50")
+	svg.classList.add("gauge__svg")
 
-	const arc = document.createElement("div")
-	arc.className = "gauge__arc"
+	const track = document.createElementNS("http://www.w3.org/2000/svg", "path")
+	track.setAttribute("d", "M5 50 A45 45 0 0 1 95 50")
+	track.setAttribute("pathLength", "100")
+	track.classList.add("gauge__track")
+
+	const progress = document.createElementNS("http://www.w3.org/2000/svg", "path")
+	progress.setAttribute("d", "M5 50 A45 45 0 0 1 95 50")
+	progress.setAttribute("pathLength", "100")
+	progress.classList.add("gauge__progress")
+
+	svg.appendChild(track)
+	svg.appendChild(progress)
 
 	const value = document.createElement("div")
 	value.className = "gauge__value"
@@ -33,7 +59,7 @@ function makeClassCard(name) {
 	title.className = "class-card__name"
 	title.textContent = name
 
-	gauge.appendChild(arc)
+	gauge.appendChild(svg)
 	gauge.appendChild(value)
 
 	inner.appendChild(del)
@@ -41,6 +67,7 @@ function makeClassCard(name) {
 	inner.appendChild(title)
 
 	card.appendChild(inner)
+	classes.push({ id, name, assignments: [], card })
 	return card
 }
 
@@ -74,6 +101,11 @@ if (classGrid) {
 			const card = deleteBtn.closest(".class-card")
 			if (!card) return
 			if (card.classList.contains("class-card--add")) return
+			const id = card.dataset.classId
+			if (id) {
+				const index = classes.findIndex((item) => item.id === id)
+				if (index >= 0) classes.splice(index, 1)
+			}
 			card.remove()
 			return
 		}
@@ -82,11 +114,16 @@ if (classGrid) {
 		if (!card) return
 		if (card.classList.contains("class-card--add")) return
 
-		const nameEl = card.querySelector(".class-card__name")
-		const name = nameEl ? nameEl.textContent.trim() : "Class"
-		if (classTitle) classTitle.textContent = name
+		const id = card.dataset.classId
+		const info = id ? classes.find((item) => item.id === id) : null
+		if (!info) return
+
+		activeClassId = info.id
+		if (classTitle) classTitle.textContent = info.name
 		if (dashboard) dashboard.classList.add("hidden")
 		if (classView) classView.classList.remove("hidden")
+		if (topbar) topbar.classList.add("hidden")
+		renderAssignments()
 	})
 }
 
@@ -95,5 +132,87 @@ if (backLink) {
 		e.preventDefault()
 		if (classView) classView.classList.add("hidden")
 		if (dashboard) dashboard.classList.remove("hidden")
+		if (topbar) topbar.classList.remove("hidden")
 	})
+}
+
+function getActiveClass() {
+	return classes.find((item) => item.id === activeClassId) || null
+}
+
+function calculateAverage(items) {
+	let totalWeight = 0
+	let totalScore = 0
+
+	items.forEach((item) => {
+		totalWeight += item.weight
+		totalScore += item.grade * item.weight
+	})
+
+	if (!totalWeight) return 0
+	return totalScore / totalWeight
+}
+
+function getAverageColor(value) {
+	if (value < 50) return "#ef4444"
+	if (value < 80) return "#f59e0b"
+	return "#22c55e"
+}
+
+function renderAssignments() {
+	const info = getActiveClass()
+	if (!info) return
+
+	if (gradesList) {
+		gradesList.innerHTML = ""
+		info.assignments.forEach((item) => {
+			const row = document.createElement("div")
+			row.className = "grades-row"
+			row.innerHTML =
+				`<div>${item.name}</div><div>${item.grade}%</div><div>${item.weight}%</div><div></div>`
+			gradesList.appendChild(row)
+		})
+	}
+
+	const avg = calculateAverage(info.assignments)
+	const rounded = Math.round(avg)
+	const color = getAverageColor(rounded)
+	if (classAverage) classAverage.textContent = rounded + "%"
+	if (classAverageFill) {
+		classAverageFill.style.width = Math.min(100, rounded) + "%"
+		classAverageFill.style.background = color
+	}
+
+	const valueEl = info.card.querySelector(".gauge__value")
+	if (valueEl) valueEl.textContent = rounded + "%"
+	const progressEl = info.card.querySelector(".gauge__progress")
+	if (progressEl) {
+		const pct = Math.max(0, Math.min(100, rounded))
+		progressEl.style.stroke = color
+		progressEl.style.strokeDasharray = "100"
+		progressEl.style.strokeDashoffset = String(100 - pct)
+		progressEl.style.strokeLinecap = pct === 0 ? "butt" : "round"
+		progressEl.style.opacity = pct === 0 ? "0" : "1"
+	}
+}
+
+function addAssignment() {
+	const info = getActiveClass()
+	if (!info) return
+
+	const name = (assignmentName?.value || "").trim()
+	const grade = Number(assignmentGrade?.value)
+	const weight = Number(assignmentWeight?.value)
+	if (!name || !Number.isFinite(grade) || !Number.isFinite(weight)) return
+
+	info.assignments.push({ name, grade, weight })
+	if (assignmentName) assignmentName.value = ""
+	if (assignmentGrade) assignmentGrade.value = ""
+	if (assignmentWeight) assignmentWeight.value = ""
+	if (assignmentName) assignmentName.focus()
+	renderAssignments()
+}
+
+if (addAssignmentBtn) {
+	addAssignmentBtn.addEventListener("click", addAssignment)
 }
