@@ -7,6 +7,10 @@ const classView = document.getElementById("classView")
 const classTitle = document.getElementById("classTitle")
 const backLink = classView ? classView.querySelector(".back") : null
 const topbar = document.querySelector(".topbar")
+const topbarTitle = document.querySelector(".topbar h1")
+const taskBoard = document.getElementById("taskBoard")
+const navDashboard = document.getElementById("navDashboard")
+const navTaskBoard = document.getElementById("navTaskBoard")
 const classAverage = document.getElementById("classAverage")
 const classAverageFill = document.getElementById("classAverageFill")
 const assignmentName = document.getElementById("assignmentName")
@@ -15,14 +19,16 @@ const assignmentWeight = document.getElementById("assignmentWeight")
 const addAssignmentBtn = document.getElementById("addAssignmentBtn")
 const gradesList = document.getElementById("gradesList")
 
+const storageKey = "classify-data"
+
 const classes = []
 let activeClassId = null
 
-function makeClassCard(name) {
-	const id = "c" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+function makeClassCard(name, id, assignments = []) {
+	const classId = id || "c" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
 	const card = document.createElement("article")
 	card.className = "class-card"
-	card.dataset.classId = id
+	card.dataset.classId = classId
 
 	const inner = document.createElement("div")
 	inner.className = "class-card__inner"
@@ -67,7 +73,7 @@ function makeClassCard(name) {
 	inner.appendChild(title)
 
 	card.appendChild(inner)
-	classes.push({ id, name, assignments: [], card })
+	classes.push({ id: classId, name, assignments: Array.isArray(assignments) ? assignments : [], card })
 	return card
 }
 
@@ -79,6 +85,7 @@ function addClass() {
 	classGrid.insertBefore(card, addCard)
 	addClassInput.value = ""
 	addClassInput.focus()
+	saveData()
 }
 
 if (addClassBtn) {
@@ -107,6 +114,7 @@ if (classGrid) {
 				if (index >= 0) classes.splice(index, 1)
 			}
 			card.remove()
+			saveData()
 			return
 		}
 
@@ -133,6 +141,47 @@ if (backLink) {
 		if (classView) classView.classList.add("hidden")
 		if (dashboard) dashboard.classList.remove("hidden")
 		if (topbar) topbar.classList.remove("hidden")
+		if (taskBoard) taskBoard.classList.add("hidden")
+		if (topbarTitle) topbarTitle.textContent = "Dashboard"
+	})
+}
+
+if (navDashboard) {
+	navDashboard.addEventListener("click", (e) => {
+		e.preventDefault()
+		if (dashboard) dashboard.classList.remove("hidden")
+		if (classView) classView.classList.add("hidden")
+		if (taskBoard) taskBoard.classList.add("hidden")
+		if (topbar) topbar.classList.remove("hidden")
+		if (topbarTitle) topbarTitle.textContent = "Dashboard"
+	})
+}
+
+if (navTaskBoard) {
+	navTaskBoard.addEventListener("click", (e) => {
+		e.preventDefault()
+		if (dashboard) dashboard.classList.add("hidden")
+		if (classView) classView.classList.add("hidden")
+		if (taskBoard) taskBoard.classList.remove("hidden")
+		if (topbar) topbar.classList.remove("hidden")
+		if (topbarTitle) topbarTitle.textContent = "Task Board"
+	})
+}
+
+if (gradesList) {
+	gradesList.addEventListener("click", (e) => {
+		const target = e.target
+		if (!(target instanceof Element)) return
+		const btn = target.closest(".row-delete")
+		if (!btn) return
+
+		const info = getActiveClass()
+		if (!info) return
+		const index = Number(btn.dataset.index)
+		if (!Number.isInteger(index)) return
+		info.assignments.splice(index, 1)
+		renderAssignments()
+		saveData()
 	})
 }
 
@@ -159,32 +208,14 @@ function getAverageColor(value) {
 	return "#22c55e"
 }
 
-function renderAssignments() {
-	const info = getActiveClass()
-	if (!info) return
-
-	if (gradesList) {
-		gradesList.innerHTML = ""
-		info.assignments.forEach((item) => {
-			const row = document.createElement("div")
-			row.className = "grades-row"
-			row.innerHTML =
-				`<div>${item.name}</div><div>${item.grade}%</div><div>${item.weight}%</div><div></div>`
-			gradesList.appendChild(row)
-		})
-	}
-
+function updateCardAverage(info) {
 	const avg = calculateAverage(info.assignments)
 	const rounded = Math.round(avg)
 	const color = getAverageColor(rounded)
-	if (classAverage) classAverage.textContent = rounded + "%"
-	if (classAverageFill) {
-		classAverageFill.style.width = Math.min(100, rounded) + "%"
-		classAverageFill.style.background = color
-	}
 
 	const valueEl = info.card.querySelector(".gauge__value")
 	if (valueEl) valueEl.textContent = rounded + "%"
+
 	const progressEl = info.card.querySelector(".gauge__progress")
 	if (progressEl) {
 		const pct = Math.max(0, Math.min(100, rounded))
@@ -193,6 +224,31 @@ function renderAssignments() {
 		progressEl.style.strokeDashoffset = String(100 - pct)
 		progressEl.style.strokeLinecap = pct === 0 ? "butt" : "round"
 		progressEl.style.opacity = pct === 0 ? "0" : "1"
+	}
+
+	return { rounded, color }
+}
+
+function renderAssignments() {
+	const info = getActiveClass()
+	if (!info) return
+
+	if (gradesList) {
+		gradesList.innerHTML = ""
+		info.assignments.forEach((item, index) => {
+			const row = document.createElement("div")
+			row.className = "grades-row"
+			row.innerHTML =
+				`<div>${item.name}</div><div>${item.grade}%</div><div>${item.weight}%</div><div><button class="row-delete" data-index="${index}">Delete</button></div>`
+			gradesList.appendChild(row)
+		})
+	}
+
+	const { rounded, color } = updateCardAverage(info)
+	if (classAverage) classAverage.textContent = rounded + "%"
+	if (classAverageFill) {
+		classAverageFill.style.width = Math.min(100, rounded) + "%"
+		classAverageFill.style.background = color
 	}
 }
 
@@ -211,8 +267,35 @@ function addAssignment() {
 	if (assignmentWeight) assignmentWeight.value = ""
 	if (assignmentName) assignmentName.focus()
 	renderAssignments()
+	saveData()
 }
 
 if (addAssignmentBtn) {
 	addAssignmentBtn.addEventListener("click", addAssignment)
 }
+
+function saveData() {
+	const data = classes.map(({ id, name, assignments }) => ({ id, name, assignments }))
+	localStorage.setItem(storageKey, JSON.stringify(data))
+}
+
+function loadData() {
+	const raw = localStorage.getItem(storageKey)
+	if (!raw) return
+	let data
+	try {
+		data = JSON.parse(raw)
+	} catch {
+		return
+	}
+	if (!Array.isArray(data)) return
+	data.forEach((item) => {
+		if (!item || !item.id || !item.name) return
+		const card = makeClassCard(item.name, item.id, item.assignments)
+		classGrid.insertBefore(card, addCard)
+		const info = classes.find((c) => c.id === item.id)
+		if (info) updateCardAverage(info)
+	})
+}
+
+loadData()

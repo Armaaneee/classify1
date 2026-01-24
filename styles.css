@@ -51,9 +51,27 @@ body {
 .brand {
 	text-decoration: none;
 	color: var(--text);
-	display: inline-block;
+	display: flex;
+	align-items: center;
+	gap: 10px;
 	font-weight: 700;
 	letter-spacing: -0.02em;
+}
+
+.brand__icon {
+	width: 28px;
+	height: 28px;
+	border-radius: 8px;
+	background: #fff;
+	border: 1px solid var(--line);
+	display: grid;
+	place-items: center;
+}
+
+.brand__icon svg {
+	width: 18px;
+	height: 18px;
+	fill: #0f172a;
 }
 
 .nav {
@@ -64,12 +82,30 @@ body {
 }
 
 .nav__item {
-	display: block;
+	display: flex;
+	align-items: center;
+	gap: 10px;
 	padding: 10px 12px;
 	border-radius: 10px;
 	color: var(--text);
 	text-decoration: none;
 	background: rgba(15, 23, 42, 0.04);
+}
+
+.nav__icon {
+	width: 30px;
+	height: 30px;
+	border-radius: 10px;
+	background: #fff;
+	border: 1px solid var(--line);
+	display: grid;
+	place-items: center;
+}
+
+.nav__icon svg {
+	width: 16px;
+	height: 16px;
+	fill: #0f172a;
 }
 
 .nav__item:hover {
@@ -252,6 +288,54 @@ body {
 	border-top: 1px solid #eef2f7;
 	font-size: 15px;
 	color: #334155;
+}
+
+.grades-row button {
+	padding: 8px 12px;
+	border-radius: 8px;
+	border: 1px solid #fecaca;
+	background: #fff;
+	color: #dc2626;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.grades-row button:hover {
+	background: #fee2e2;
+}
+
+.kanban {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(240px, 1fr));
+	gap: 18px;
+}
+
+.kanban__column {
+	background: #f1f5f9;
+	border: 1px solid #e2e8f0;
+	border-radius: 12px;
+	padding: 14px;
+	min-height: 180px;
+}
+
+.kanban__title {
+	font-weight: 700;
+	font-size: 14px;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: #64748b;
+	margin-bottom: 12px;
+}
+
+.kanban__card {
+	background: #fff;
+	border: 1px solid #e2e8f0;
+	border-radius: 10px;
+	padding: 12px 14px;
+	font-weight: 600;
+	color: #0f172a;
+	box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
+	margin-bottom: 10px;
 }
 
 .card-grid {

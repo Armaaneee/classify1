@@ -10,12 +10,26 @@
 		<div class="app">
 			<aside class="sidebar">
 				<div class="sidebar__top">
-					<a class="brand" href="#dashboard">Classify</a>
+					<a class="brand" href="#dashboard">
+						<span class="brand__icon">
+							<svg viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-8.5Z"/></svg>
+						</span>
+						Classify
+					</a>
 				</div>
 
 				<nav class="nav">
-					<a class="nav__item" href="#dashboard">
+					<a class="nav__item" id="navDashboard" href="#dashboard">
+						<span class="nav__icon">
+							<svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>
+						</span>
 						Dashboard
+					</a>
+					<a class="nav__item" id="navTaskBoard" href="#taskBoard">
+						<span class="nav__icon">
+							<svg viewBox="0 0 24 24"><path d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm2 5h8M8 12h8M8 16h8"/></svg>
+						</span>
+						Task Board
 					</a>
 				</nav>
 
@@ -72,6 +86,30 @@
 								<button id="addAssignmentBtn" type="button">+</button>
 							</div>
 							<div class="grades-list" id="gradesList"></div>
+						</div>
+					</div>
+				</section>
+
+				<section id="taskBoard" class="page hidden">
+					<div class="page__header">
+						<h2>Task Board</h2>
+					</div>
+					<div class="kanban">
+						<div class="kanban__column">
+							<div class="kanban__title">To do</div>
+							<div class="kanban__card">Finish math worksheet</div>
+							<div class="kanban__card">Read chapter 5</div>
+							<div class="kanban__card">Outline essay topic</div>
+						</div>
+						<div class="kanban__column">
+							<div class="kanban__title">In progress</div>
+							<div class="kanban__card">Science lab report</div>
+							<div class="kanban__card">History notes</div>
+						</div>
+						<div class="kanban__column">
+							<div class="kanban__title">Complete</div>
+							<div class="kanban__card">Submit quiz corrections</div>
+							<div class="kanban__card">Math practice set</div>
 						</div>
 					</div>
 				</section>
