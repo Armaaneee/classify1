@@ -18,8 +18,12 @@ const assignmentGrade = document.getElementById("assignmentGrade")
 const assignmentWeight = document.getElementById("assignmentWeight")
 const addAssignmentBtn = document.getElementById("addAssignmentBtn")
 const gradesList = document.getElementById("gradesList")
+const kanbanBoard = document.getElementById("kanbanBoard")
+const newListName = document.getElementById("newListName")
+const addListBtn = document.getElementById("addListBtn")
 
 const storageKey = "classify-data"
+const kanbanStorageKey = "classify-kanban"
 
 const classes = []
 let activeClassId = null
@@ -299,3 +303,249 @@ function loadData() {
 }
 
 loadData()
+
+function makeKanbanColumn(title) {
+	const id = "l" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+	const column = document.createElement("div")
+	column.className = "kanban__column"
+	column.dataset.listId = id
+	column.draggable = true
+
+	const header = document.createElement("div")
+	header.className = "kanban__title"
+	const headerText = document.createElement("span")
+	headerText.textContent = title
+	const remove = document.createElement("button")
+	remove.className = "kanban__remove"
+	remove.type = "button"
+	remove.textContent = "×"
+	header.appendChild(headerText)
+	header.appendChild(remove)
+
+	const cards = document.createElement("div")
+	cards.className = "kanban__cards"
+
+	const add = document.createElement("div")
+	add.className = "kanban__add"
+
+	const input = document.createElement("input")
+	input.type = "text"
+	input.placeholder = "Add a card"
+
+	const button = document.createElement("button")
+	button.type = "button"
+	button.textContent = "+"
+
+	add.appendChild(input)
+	add.appendChild(button)
+
+	column.appendChild(header)
+	column.appendChild(cards)
+	column.appendChild(add)
+
+	return column
+}
+
+function makeKanbanCard(text) {
+	const card = document.createElement("div")
+	card.className = "kanban__card"
+	card.draggable = true
+	const label = document.createElement("span")
+	label.textContent = text
+	const remove = document.createElement("button")
+	remove.className = "kanban__card-remove"
+	remove.type = "button"
+	remove.textContent = "×"
+	card.appendChild(label)
+	card.appendChild(remove)
+	return card
+}
+
+function handleAddCard(button) {
+	const container = button.closest(".kanban__column")
+	if (!container) return
+	const input = container.querySelector(".kanban__add input")
+	const cards = container.querySelector(".kanban__cards")
+	if (!input || !cards) return
+	const text = input.value.trim()
+	if (!text) return
+	const card = makeKanbanCard(text)
+	cards.appendChild(card)
+	input.value = ""
+	input.focus()
+}
+
+if (addListBtn) {
+	addListBtn.addEventListener("click", () => {
+		const name = (newListName?.value || "").trim()
+		if (!name || !kanbanBoard) return
+		const column = makeKanbanColumn(name)
+		kanbanBoard.appendChild(column)
+		newListName.value = ""
+		newListName.focus()
+		saveKanban()
+	})
+}
+
+if (kanbanBoard) {
+	kanbanBoard.addEventListener("click", (e) => {
+		const target = e.target
+		if (!(target instanceof Element)) return
+		if (target.matches(".kanban__add button")) {
+			handleAddCard(target)
+			saveKanban()
+		}
+		if (target.matches(".kanban__remove")) {
+			const column = target.closest(".kanban__column")
+			if (!column) return
+			column.remove()
+			saveKanban()
+		}
+		if (target.matches(".kanban__card-remove")) {
+			const card = target.closest(".kanban__card")
+			if (!card) return
+			card.remove()
+			saveKanban()
+		}
+	})
+
+	kanbanBoard.querySelectorAll(".kanban__column").forEach((column) => {
+		column.draggable = true
+	})
+
+	kanbanBoard.addEventListener("keydown", (e) => {
+		const target = e.target
+		if (!(target instanceof HTMLInputElement)) return
+		if (!target.closest(".kanban__add")) return
+		if (e.key === "Enter") {
+			const button = target.closest(".kanban__add")?.querySelector("button")
+			if (button) handleAddCard(button)
+		}
+	})
+}
+
+let draggedCard = null
+
+if (kanbanBoard) {
+	kanbanBoard.addEventListener("dragstart", (e) => {
+		const target = e.target
+		if (!(target instanceof Element)) return
+		if (target.classList.contains("kanban__card")) {
+			draggedCard = target
+			requestAnimationFrame(() => target.classList.add("is-dragging"))
+		}
+	})
+
+	kanbanBoard.addEventListener("dragend", (e) => {
+		const target = e.target
+		if (!(target instanceof Element)) return
+		if (target.classList.contains("kanban__card")) {
+			target.classList.remove("is-dragging")
+			saveKanban()
+		}
+		draggedCard = null
+	})
+
+	kanbanBoard.addEventListener("dragover", (e) => {
+		e.preventDefault()
+		const target = e.target
+		if (!(target instanceof Element)) return
+
+		const column = target.closest(".kanban__column")
+		if (!column || !draggedCard) return
+		const cards = column.querySelector(".kanban__cards")
+		if (!cards) return
+		const afterElement = getDragAfterElement(cards, e.clientY)
+		if (afterElement == null) {
+			cards.appendChild(draggedCard)
+		} else {
+			cards.insertBefore(draggedCard, afterElement)
+		}
+	})
+}
+
+let draggedColumn = null
+
+if (kanbanBoard) {
+	kanbanBoard.addEventListener("dragstart", (e) => {
+		const target = e.target
+		if (!(target instanceof Element)) return
+		if (target.classList.contains("kanban__column")) {
+			draggedColumn = target
+		}
+	})
+
+	kanbanBoard.addEventListener("dragend", () => {
+		draggedColumn = null
+		saveKanban()
+	})
+
+	kanbanBoard.addEventListener("dragover", (e) => {
+		if (!draggedColumn) return
+		const target = e.target
+		if (!(target instanceof Element)) return
+		const column = target.closest(".kanban__column")
+		if (!column || column === draggedColumn) return
+		const rect = column.getBoundingClientRect()
+		const isAfter = e.clientX > rect.left + rect.width / 2
+		if (isAfter) {
+			kanbanBoard.insertBefore(draggedColumn, column.nextSibling)
+		} else {
+			kanbanBoard.insertBefore(draggedColumn, column)
+		}
+	})
+}
+
+function getDragAfterElement(container, y) {
+	const draggableElements = [...container.querySelectorAll(".kanban__card:not(.is-dragging)")]
+	let closest = null
+	let closestOffset = Number.NEGATIVE_INFINITY
+	for (const child of draggableElements) {
+		const box = child.getBoundingClientRect()
+		const offset = y - box.top - box.height / 2
+		if (offset < 0 && offset > closestOffset) {
+			closestOffset = offset
+			closest = child
+		}
+	}
+	return closest
+}
+
+function saveKanban() {
+	if (!kanbanBoard) return
+	const data = [...kanbanBoard.querySelectorAll(".kanban__column")].map((column) => {
+		const titleEl = column.querySelector(".kanban__title span")
+		const title = titleEl ? titleEl.textContent.trim() : ""
+		const cards = [...column.querySelectorAll(".kanban__card span")].map((span) => span.textContent)
+		return { title, cards }
+	})
+	localStorage.setItem(kanbanStorageKey, JSON.stringify(data))
+}
+
+function loadKanban() {
+	if (!kanbanBoard) return
+	const raw = localStorage.getItem(kanbanStorageKey)
+	if (!raw) return
+	let data
+	try {
+		data = JSON.parse(raw)
+	} catch {
+		return
+	}
+	if (!Array.isArray(data)) return
+	kanbanBoard.innerHTML = ""
+	data.forEach((list) => {
+		if (!list || !list.title) return
+		const column = makeKanbanColumn(list.title)
+		const cardsContainer = column.querySelector(".kanban__cards")
+		if (cardsContainer && Array.isArray(list.cards)) {
+			list.cards.forEach((text) => {
+				if (!text) return
+				cardsContainer.appendChild(makeKanbanCard(text))
+			})
+		}
+		kanbanBoard.appendChild(column)
+	})
+}
+
+loadKanban()

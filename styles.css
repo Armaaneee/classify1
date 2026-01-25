@@ -310,15 +310,49 @@ body {
 	gap: 18px;
 }
 
+.kanban__header {
+	align-items: center;
+}
+
+.kanban__new {
+	display: flex;
+	gap: 10px;
+	align-items: center;
+}
+
+.kanban__new input {
+	padding: 10px 12px;
+	border-radius: 8px;
+	border: 1px solid #d1d5db;
+	background: #fff;
+	min-width: 180px;
+}
+
+.kanban__new button {
+	padding: 10px 12px;
+	border-radius: 8px;
+	border: 1px solid #1d4ed8;
+	background: #2563eb;
+	color: #fff;
+	font-weight: 600;
+	cursor: pointer;
+}
+
 .kanban__column {
 	background: #f1f5f9;
 	border: 1px solid #e2e8f0;
 	border-radius: 12px;
 	padding: 14px;
 	min-height: 180px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
 }
 
 .kanban__title {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 	font-weight: 700;
 	font-size: 14px;
 	text-transform: uppercase;
@@ -327,7 +361,27 @@ body {
 	margin-bottom: 12px;
 }
 
+.kanban__remove {
+	width: 26px;
+	height: 26px;
+	border: 1px solid #e2e8f0;
+	border-radius: 8px;
+	background: #fff;
+	color: #64748b;
+	font-size: 16px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.kanban__remove:hover {
+	color: #dc2626;
+	border-color: #fecaca;
+}
+
 .kanban__card {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 	background: #fff;
 	border: 1px solid #e2e8f0;
 	border-radius: 10px;
@@ -336,6 +390,62 @@ body {
 	color: #0f172a;
 	box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
 	margin-bottom: 10px;
+	cursor: grab;
+}
+
+.kanban__card-remove {
+	width: 24px;
+	height: 24px;
+	border: 1px solid #e2e8f0;
+	border-radius: 8px;
+	background: #fff;
+	color: #64748b;
+	font-size: 14px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.kanban__card-remove:hover {
+	color: #dc2626;
+	border-color: #fecaca;
+}
+
+.kanban__card.is-dragging {
+	opacity: 0.5;
+	cursor: grabbing;
+}
+
+.kanban__cards {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.kanban__add {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	margin-top: auto;
+}
+
+.kanban__add input {
+	flex: 1;
+	padding: 10px 12px;
+	border-radius: 8px;
+	border: 1px solid #d1d5db;
+	background: #fff;
+}
+
+.kanban__add button {
+	width: 36px;
+	height: 36px;
+	border-radius: 8px;
+	border: 0;
+	background: #d1fadf;
+	color: #16a34a;
+	font-size: 18px;
+	font-weight: 700;
+	cursor: pointer;
 }
 
 .card-grid {

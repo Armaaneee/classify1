@@ -91,25 +91,49 @@
 				</section>
 
 				<section id="taskBoard" class="page hidden">
-					<div class="page__header">
+					<div class="page__header kanban__header">
 						<h2>Task Board</h2>
+						<div class="kanban__new">
+							<input id="newListName" type="text" placeholder="New list name" />
+							<button id="addListBtn" type="button">Add List</button>
+						</div>
 					</div>
-					<div class="kanban">
-						<div class="kanban__column">
-							<div class="kanban__title">To do</div>
-							<div class="kanban__card">Finish math worksheet</div>
-							<div class="kanban__card">Read chapter 5</div>
-							<div class="kanban__card">Outline essay topic</div>
+					<div class="kanban" id="kanbanBoard">
+						<div class="kanban__column" data-list-id="todo">
+							<div class="kanban__title">
+								<span>To do</span>
+								<button class="kanban__remove" type="button">×</button>
+							</div>
+							<div class="kanban__cards">
+							</div>
+							<div class="kanban__add">
+								<input type="text" placeholder="Add a card" />
+								<button type="button">+</button>
+							</div>
 						</div>
-						<div class="kanban__column">
-							<div class="kanban__title">In progress</div>
-							<div class="kanban__card">Science lab report</div>
-							<div class="kanban__card">History notes</div>
+						<div class="kanban__column" data-list-id="progress">
+							<div class="kanban__title">
+								<span>In progress</span>
+								<button class="kanban__remove" type="button">×</button>
+							</div>
+							<div class="kanban__cards">
+							</div>
+							<div class="kanban__add">
+								<input type="text" placeholder="Add a card" />
+								<button type="button">+</button>
+							</div>
 						</div>
-						<div class="kanban__column">
-							<div class="kanban__title">Complete</div>
-							<div class="kanban__card">Submit quiz corrections</div>
-							<div class="kanban__card">Math practice set</div>
+						<div class="kanban__column" data-list-id="done">
+							<div class="kanban__title">
+								<span>Complete</span>
+								<button class="kanban__remove" type="button">×</button>
+							</div>
+							<div class="kanban__cards">
+							</div>
+							<div class="kanban__add">
+								<input type="text" placeholder="Add a card" />
+								<button type="button">+</button>
+							</div>
 						</div>
 					</div>
 				</section>
