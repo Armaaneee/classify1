@@ -152,6 +152,7 @@ if (backLink) {
 		e.preventDefault()
 		if (classView) classView.classList.add("hidden")
 		if (dashboard) dashboard.classList.remove("hidden")
+		if (calendarPage) calendarPage.classList.add("hidden")
 		if (topbar) topbar.classList.remove("hidden")
 		if (taskBoard) taskBoard.classList.add("hidden")
 		if (topbarTitle) topbarTitle.textContent = "Dashboard"
@@ -164,6 +165,7 @@ if (navDashboard) {
 		if (dashboard) dashboard.classList.remove("hidden")
 		if (classView) classView.classList.add("hidden")
 		if (taskBoard) taskBoard.classList.add("hidden")
+		if (calendarPage) calendarPage.classList.add("hidden")
 		if (topbar) topbar.classList.remove("hidden")
 		if (topbarTitle) topbarTitle.textContent = "Dashboard"
 	})
