@@ -31,6 +31,12 @@
 						</span>
 						Task Board
 					</a>
+					<a class="nav__item" id="navCalendar" href="#calendarPage">
+						<span class="nav__icon">
+							<svg viewBox="0 0 24 24"><path d="M7 2v2H5a2 2 0 0 0-2 2v3h18V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7Zm14 9H3v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9Zm-13 3h4v4H8v-4Z"/></svg>
+						</span>
+						Calendar
+					</a>
 				</nav>
 
 				<div class="sidebar__bottom">
@@ -134,6 +140,35 @@
 								<input type="text" placeholder="Add a card" />
 								<button type="button">+</button>
 							</div>
+						</div>
+					</div>
+				</section>
+
+				<section id="calendarPage" class="page hidden">
+					<div class="page__header calendar__header">
+						<h2>Calendar</h2>
+						<div class="calendar__controls">
+							<button id="calendarPrev" type="button">←</button>
+							<button id="calendarToday" type="button">Today</button>
+							<button id="calendarNext" type="button">→</button>
+						</div>
+					</div>
+					<div class="calendar">
+						<div class="calendar__left">
+							<div class="calendar__month" id="calendarMonth"></div>
+							<div class="calendar__weekdays">
+								<div>Mon</div>
+								<div>Tue</div>
+								<div>Wed</div>
+								<div>Thu</div>
+								<div>Fri</div>
+								<div>Sat</div>
+								<div>Sun</div>
+							</div>
+							<div class="calendar__grid" id="calendarGrid"></div>
+						</div>
+						<div class="calendar__right">
+							<div class="calendar__day" id="calendarDay"></div>
 						</div>
 					</div>
 				</section>

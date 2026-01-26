@@ -11,6 +11,7 @@ const topbarTitle = document.querySelector(".topbar h1")
 const taskBoard = document.getElementById("taskBoard")
 const navDashboard = document.getElementById("navDashboard")
 const navTaskBoard = document.getElementById("navTaskBoard")
+const navCalendar = document.getElementById("navCalendar")
 const classAverage = document.getElementById("classAverage")
 const classAverageFill = document.getElementById("classAverageFill")
 const assignmentName = document.getElementById("assignmentName")
@@ -21,6 +22,13 @@ const gradesList = document.getElementById("gradesList")
 const kanbanBoard = document.getElementById("kanbanBoard")
 const newListName = document.getElementById("newListName")
 const addListBtn = document.getElementById("addListBtn")
+const calendarPage = document.getElementById("calendarPage")
+const calendarMonth = document.getElementById("calendarMonth")
+const calendarGrid = document.getElementById("calendarGrid")
+const calendarDay = document.getElementById("calendarDay")
+const calendarPrev = document.getElementById("calendarPrev")
+const calendarNext = document.getElementById("calendarNext")
+const calendarToday = document.getElementById("calendarToday")
 
 const storageKey = "classify-data"
 const kanbanStorageKey = "classify-kanban"
@@ -167,8 +175,22 @@ if (navTaskBoard) {
 		if (dashboard) dashboard.classList.add("hidden")
 		if (classView) classView.classList.add("hidden")
 		if (taskBoard) taskBoard.classList.remove("hidden")
+		if (calendarPage) calendarPage.classList.add("hidden")
 		if (topbar) topbar.classList.remove("hidden")
 		if (topbarTitle) topbarTitle.textContent = "Task Board"
+	})
+}
+
+if (navCalendar) {
+	navCalendar.addEventListener("click", (e) => {
+		e.preventDefault()
+		if (dashboard) dashboard.classList.add("hidden")
+		if (classView) classView.classList.add("hidden")
+		if (taskBoard) taskBoard.classList.add("hidden")
+		if (calendarPage) calendarPage.classList.remove("hidden")
+		if (topbar) topbar.classList.remove("hidden")
+		if (topbarTitle) topbarTitle.textContent = "Calendar"
+		renderCalendar()
 	})
 }
 
@@ -276,6 +298,102 @@ function addAssignment() {
 
 if (addAssignmentBtn) {
 	addAssignmentBtn.addEventListener("click", addAssignment)
+}
+
+let calendarDate = new Date()
+let selectedDate = new Date()
+
+function renderCalendar() {
+	if (!calendarMonth || !calendarGrid || !calendarDay) return
+
+	const year = calendarDate.getFullYear()
+	const month = calendarDate.getMonth()
+	calendarMonth.textContent = calendarDate.toLocaleString("default", { month: "long", year: "numeric" })
+
+	const firstDay = new Date(year, month, 1)
+	const startDay = (firstDay.getDay() + 6) % 7
+	const daysInMonth = new Date(year, month + 1, 0).getDate()
+	const daysInPrev = new Date(year, month, 0).getDate()
+
+	calendarGrid.innerHTML = ""
+
+	for (let i = 0; i < startDay; i++) {
+		const dayNum = daysInPrev - startDay + i + 1
+		const cell = document.createElement("div")
+		cell.className = "calendar__cell calendar__cell--muted"
+		cell.textContent = dayNum
+		calendarGrid.appendChild(cell)
+	}
+
+	for (let d = 1; d <= daysInMonth; d++) {
+		const cellDate = new Date(year, month, d)
+		const cell = document.createElement("div")
+		cell.className = "calendar__cell"
+		cell.textContent = d
+
+		const today = new Date()
+		if (
+			cellDate.getFullYear() === today.getFullYear() &&
+			cellDate.getMonth() === today.getMonth() &&
+			cellDate.getDate() === today.getDate()
+		) {
+			cell.classList.add("calendar__cell--today")
+		}
+
+		if (
+			cellDate.getFullYear() === selectedDate.getFullYear() &&
+			cellDate.getMonth() === selectedDate.getMonth() &&
+			cellDate.getDate() === selectedDate.getDate()
+		) {
+			cell.classList.add("calendar__cell--selected")
+		}
+
+		cell.addEventListener("click", () => {
+			selectedDate = new Date(year, month, d)
+			renderCalendar()
+		})
+
+		calendarGrid.appendChild(cell)
+	}
+
+	const totalCells = startDay + daysInMonth
+	const trailing = (7 - (totalCells % 7)) % 7
+	for (let i = 1; i <= trailing; i++) {
+		const cell = document.createElement("div")
+		cell.className = "calendar__cell calendar__cell--muted"
+		cell.textContent = i
+		calendarGrid.appendChild(cell)
+	}
+
+	calendarDay.textContent = selectedDate.toLocaleDateString("default", {
+		weekday: "long",
+		month: "long",
+		day: "numeric",
+		year: "numeric"
+	})
+
+}
+
+if (calendarPrev) {
+	calendarPrev.addEventListener("click", () => {
+		calendarDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1)
+		renderCalendar()
+	})
+}
+
+if (calendarNext) {
+	calendarNext.addEventListener("click", () => {
+		calendarDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1)
+		renderCalendar()
+	})
+}
+
+if (calendarToday) {
+	calendarToday.addEventListener("click", () => {
+		calendarDate = new Date()
+		selectedDate = new Date()
+		renderCalendar()
+	})
 }
 
 function saveData() {
