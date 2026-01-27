@@ -466,19 +466,200 @@ function makeKanbanColumn(title) {
 	return column
 }
 
-function makeKanbanCard(text) {
+function makeKanbanCard(text, dueDate = "") {
 	const card = document.createElement("div")
 	card.className = "kanban__card"
 	card.draggable = true
 	const label = document.createElement("span")
 	label.textContent = text
+	const meta = document.createElement("div")
+	meta.className = "kanban__card-meta"
+	const due = document.createElement("button")
+	due.className = "kanban__due-toggle"
+	due.type = "button"
+	const dueIcon = document.createElement("span")
+	dueIcon.innerHTML =
+		`<svg class="kanban__due-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`
+	const dueText = document.createElement("span")
+	dueText.className = "kanban__due-text"
+	due.appendChild(dueIcon)
+	due.appendChild(dueText)
 	const remove = document.createElement("button")
 	remove.className = "kanban__card-remove"
 	remove.type = "button"
 	remove.textContent = "×"
+	meta.appendChild(due)
+	meta.appendChild(remove)
 	card.appendChild(label)
-	card.appendChild(remove)
+	card.appendChild(meta)
+	setDueDate(card, dueDate)
 	return card
+}
+
+function setDueDate(card, dueDate) {
+	const dueBtn = card.querySelector(".kanban__due-toggle")
+	if (!dueBtn) return
+	const dueText = dueBtn.querySelector(".kanban__due-text")
+	const icon = dueBtn.querySelector(".kanban__due-icon")
+	if (!dueText || !icon) return
+	if (!dueDate) {
+		card.dataset.dueDate = ""
+		dueText.textContent = ""
+		dueBtn.classList.remove("has-date")
+		dueBtn.classList.add("no-date")
+		dueBtn.classList.remove("due-soon", "due-urgent")
+		icon.style.display = "block"
+		return
+	}
+	card.dataset.dueDate = dueDate
+	dueText.textContent = formatDueDate(dueDate)
+	dueBtn.classList.add("has-date")
+	dueBtn.classList.remove("no-date")
+	updateDueState(dueBtn, dueDate)
+	icon.style.display = "none"
+}
+
+function updateDueState(button, dueDate) {
+	button.classList.remove("due-soon", "due-urgent")
+	const target = new Date(`${dueDate}T00:00:00`)
+	const today = new Date()
+	const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+	const diffMs = target.getTime() - startOfToday.getTime()
+	const diffDays = Math.round(diffMs / 86400000)
+	if (diffDays === 0 || diffDays === 1) {
+		button.classList.add("due-urgent")
+		return
+	}
+	if (diffDays >= 2 && diffDays <= 7) {
+		button.classList.add("due-soon")
+	}
+}
+
+function formatDueDate(isoDate) {
+	const [year, month, day] = isoDate.split("-")
+	if (!year || !month || !day) return ""
+	return `${day}/${month}/${year.slice(2)}`
+}
+
+const duePopover = document.createElement("div")
+duePopover.className = "due-popover"
+duePopover.innerHTML = `
+	<div class="due-popover__header">
+		<button class="due-popover__nav" type="button" data-action="prev">←</button>
+		<div class="due-popover__month"></div>
+		<button class="due-popover__nav" type="button" data-action="next">→</button>
+	</div>
+	<div class="due-popover__weekdays">
+		<div>Mon</div>
+		<div>Tue</div>
+		<div>Wed</div>
+		<div>Thu</div>
+		<div>Fri</div>
+		<div>Sat</div>
+		<div>Sun</div>
+	</div>
+	<div class="due-popover__grid"></div>
+	<div class="due-popover__actions">
+		<button class="due-popover__btn" type="button" data-action="today">Today</button>
+		<button class="due-popover__btn" type="button" data-action="clear">Clear</button>
+	</div>
+`
+document.body.appendChild(duePopover)
+
+let activeDueCard = null
+let duePickerDate = new Date()
+let dueSelectedDate = new Date()
+
+function formatISODate(date) {
+	const y = date.getFullYear()
+	const m = String(date.getMonth() + 1).padStart(2, "0")
+	const d = String(date.getDate()).padStart(2, "0")
+	return `${y}-${m}-${d}`
+}
+
+function renderDueCalendar() {
+	const monthEl = duePopover.querySelector(".due-popover__month")
+	const grid = duePopover.querySelector(".due-popover__grid")
+	if (!monthEl || !grid) return
+
+	const year = duePickerDate.getFullYear()
+	const month = duePickerDate.getMonth()
+	monthEl.textContent = duePickerDate.toLocaleString("default", { month: "long", year: "numeric" })
+
+	const firstDay = new Date(year, month, 1)
+	const startDay = (firstDay.getDay() + 6) % 7
+	const daysInMonth = new Date(year, month + 1, 0).getDate()
+	const daysInPrev = new Date(year, month, 0).getDate()
+
+	grid.innerHTML = ""
+
+	for (let i = 0; i < startDay; i++) {
+		const dayNum = daysInPrev - startDay + i + 1
+		const cell = document.createElement("div")
+		cell.className = "due-popover__cell due-popover__cell--muted"
+		cell.textContent = dayNum
+		grid.appendChild(cell)
+	}
+
+	for (let d = 1; d <= daysInMonth; d++) {
+		const cellDate = new Date(year, month, d)
+		const cell = document.createElement("button")
+		cell.type = "button"
+		cell.className = "due-popover__cell"
+		cell.textContent = d
+		cell.dataset.date = formatISODate(cellDate)
+
+		const today = new Date()
+		if (
+			cellDate.getFullYear() === today.getFullYear() &&
+			cellDate.getMonth() === today.getMonth() &&
+			cellDate.getDate() === today.getDate()
+		) {
+			cell.classList.add("due-popover__cell--today")
+		}
+
+		if (
+			cellDate.getFullYear() === dueSelectedDate.getFullYear() &&
+			cellDate.getMonth() === dueSelectedDate.getMonth() &&
+			cellDate.getDate() === dueSelectedDate.getDate()
+		) {
+			cell.classList.add("due-popover__cell--selected")
+		}
+
+		grid.appendChild(cell)
+	}
+
+	const totalCells = startDay + daysInMonth
+	const trailing = (7 - (totalCells % 7)) % 7
+	for (let i = 1; i <= trailing; i++) {
+		const cell = document.createElement("div")
+		cell.className = "due-popover__cell due-popover__cell--muted"
+		cell.textContent = i
+		grid.appendChild(cell)
+	}
+}
+
+function openDuePopover(card, anchor) {
+	activeDueCard = card
+	const existing = card.dataset.dueDate || ""
+	if (existing) {
+		const [y, m, d] = existing.split("-").map(Number)
+		dueSelectedDate = new Date(y, m - 1, d)
+		duePickerDate = new Date(y, m - 1, 1)
+	} else {
+		dueSelectedDate = new Date()
+		duePickerDate = new Date(dueSelectedDate.getFullYear(), dueSelectedDate.getMonth(), 1)
+	}
+	const rect = anchor.getBoundingClientRect()
+	duePopover.style.top = `${rect.bottom + window.scrollY + 8}px`
+	duePopover.style.left = `${rect.left + window.scrollX}px`
+	duePopover.classList.add("is-open")
+	renderDueCalendar()
+}
+
+function closeDuePopover() {
+	duePopover.classList.remove("is-open")
+	activeDueCard = null
 }
 
 function handleAddCard(button) {
@@ -511,6 +692,12 @@ if (kanbanBoard) {
 	kanbanBoard.addEventListener("click", (e) => {
 		const target = e.target
 		if (!(target instanceof Element)) return
+		const dueToggle = target.closest(".kanban__due-toggle")
+		if (dueToggle) {
+			const card = dueToggle.closest(".kanban__card")
+			if (card) openDuePopover(card, dueToggle)
+			return
+		}
 		if (target.matches(".kanban__add button")) {
 			handleAddCard(target)
 			saveKanban()
@@ -543,6 +730,52 @@ if (kanbanBoard) {
 		}
 	})
 }
+
+document.addEventListener("click", (e) => {
+	const target = e.target
+	if (!(target instanceof Element)) return
+	if (duePopover.contains(target)) return
+	if (target.closest(".kanban__due-toggle")) return
+	if (duePopover.classList.contains("is-open")) closeDuePopover()
+})
+
+duePopover.addEventListener("click", (e) => {
+	const target = e.target
+	if (!(target instanceof Element)) return
+	const action = target.getAttribute("data-action")
+	if (action) {
+		if (!activeDueCard) return
+		if (action === "clear") {
+			setDueDate(activeDueCard, "")
+			saveKanban()
+			closeDuePopover()
+			return
+		}
+		if (action === "today") {
+			const today = new Date()
+			const value = formatISODate(today)
+			setDueDate(activeDueCard, value)
+			saveKanban()
+			closeDuePopover()
+			return
+		}
+		if (action === "prev") {
+			duePickerDate = new Date(duePickerDate.getFullYear(), duePickerDate.getMonth() - 1, 1)
+			renderDueCalendar()
+			return
+		}
+		if (action === "next") {
+			duePickerDate = new Date(duePickerDate.getFullYear(), duePickerDate.getMonth() + 1, 1)
+			renderDueCalendar()
+			return
+		}
+	}
+	const cell = target.closest(".due-popover__cell")
+	if (!cell || !cell.dataset.date || !activeDueCard) return
+	setDueDate(activeDueCard, cell.dataset.date)
+	saveKanban()
+	closeDuePopover()
+})
 
 let draggedCard = null
 
@@ -636,7 +869,11 @@ function saveKanban() {
 	const data = [...kanbanBoard.querySelectorAll(".kanban__column")].map((column) => {
 		const titleEl = column.querySelector(".kanban__title span")
 		const title = titleEl ? titleEl.textContent.trim() : ""
-		const cards = [...column.querySelectorAll(".kanban__card span")].map((span) => span.textContent)
+		const cards = [...column.querySelectorAll(".kanban__card")].map((card) => {
+			const text = card.querySelector("span")?.textContent || ""
+			const dueDate = card.dataset.dueDate || ""
+			return { text, dueDate }
+		})
 		return { title, cards }
 	})
 	localStorage.setItem(kanbanStorageKey, JSON.stringify(data))
@@ -659,9 +896,15 @@ function loadKanban() {
 		const column = makeKanbanColumn(list.title)
 		const cardsContainer = column.querySelector(".kanban__cards")
 		if (cardsContainer && Array.isArray(list.cards)) {
-			list.cards.forEach((text) => {
-				if (!text) return
-				cardsContainer.appendChild(makeKanbanCard(text))
+			list.cards.forEach((cardItem) => {
+				if (!cardItem) return
+				if (typeof cardItem === "string") {
+					if (!cardItem) return
+					cardsContainer.appendChild(makeKanbanCard(cardItem))
+					return
+				}
+				if (!cardItem.text) return
+				cardsContainer.appendChild(makeKanbanCard(cardItem.text, cardItem.dueDate || ""))
 			})
 		}
 		kanbanBoard.appendChild(column)
