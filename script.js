@@ -26,6 +26,7 @@ const calendarPage = document.getElementById("calendarPage")
 const calendarMonth = document.getElementById("calendarMonth")
 const calendarGrid = document.getElementById("calendarGrid")
 const calendarDay = document.getElementById("calendarDay")
+const calendarTasks = document.getElementById("calendarTasks")
 const calendarPrev = document.getElementById("calendarPrev")
 const calendarNext = document.getElementById("calendarNext")
 const calendarToday = document.getElementById("calendarToday")
@@ -308,6 +309,8 @@ let selectedDate = new Date()
 function renderCalendar() {
 	if (!calendarMonth || !calendarGrid || !calendarDay) return
 
+	const dueCounts = getDueDateCounts()
+
 	const year = calendarDate.getFullYear()
 	const month = calendarDate.getMonth()
 	calendarMonth.textContent = calendarDate.toLocaleString("default", { month: "long", year: "numeric" })
@@ -331,7 +334,9 @@ function renderCalendar() {
 		const cellDate = new Date(year, month, d)
 		const cell = document.createElement("div")
 		cell.className = "calendar__cell"
-		cell.textContent = d
+		const dayNumber = document.createElement("div")
+		dayNumber.className = "calendar__date"
+		dayNumber.textContent = d
 
 		const today = new Date()
 		if (
@@ -355,6 +360,23 @@ function renderCalendar() {
 			renderCalendar()
 		})
 
+		const isoDate = formatISODate(cellDate)
+		const count = dueCounts.get(isoDate) || 0
+		if (count > 0) {
+			const dots = document.createElement("div")
+			dots.className = "calendar__dots"
+			const dotClass = getDueDotClass(cellDate)
+			for (let i = 0; i < count; i++) {
+				const dot = document.createElement("span")
+				dot.className = `calendar__dot ${dotClass}`
+				dots.appendChild(dot)
+			}
+			cell.appendChild(dayNumber)
+			cell.appendChild(dots)
+		} else {
+			cell.appendChild(dayNumber)
+		}
+
 		calendarGrid.appendChild(cell)
 	}
 
@@ -374,6 +396,97 @@ function renderCalendar() {
 		year: "numeric"
 	})
 
+	renderCalendarTasks()
+
+}
+
+function renderCalendarTasks() {
+	if (!calendarTasks) return
+	const isoDate = formatISODate(selectedDate)
+	const tasks = getDueTasksForDate(isoDate)
+	calendarTasks.innerHTML = ""
+	const title = document.createElement("div")
+	title.className = "calendar__tasks-title"
+	title.textContent = tasks.length ? "Due tasks" : "No tasks due"
+	calendarTasks.appendChild(title)
+	if (!tasks.length) return
+	const list = document.createElement("ul")
+	list.className = "calendar__tasks-list"
+	tasks.forEach((task) => {
+		const item = document.createElement("li")
+		item.textContent = task
+		list.appendChild(item)
+	})
+	calendarTasks.appendChild(list)
+}
+
+function getDueDateCounts() {
+	const counts = new Map()
+	if (kanbanBoard) {
+		kanbanBoard.querySelectorAll(".kanban__card").forEach((card) => {
+			const dueDate = card.dataset.dueDate || ""
+			if (!dueDate) return
+			counts.set(dueDate, (counts.get(dueDate) || 0) + 1)
+		})
+		return counts
+	}
+	const raw = localStorage.getItem(kanbanStorageKey)
+	if (!raw) return counts
+	try {
+		const data = JSON.parse(raw)
+		if (!Array.isArray(data)) return counts
+		data.forEach((list) => {
+			if (!list || !Array.isArray(list.cards)) return
+			list.cards.forEach((card) => {
+				const dueDate = card?.dueDate || ""
+				if (!dueDate) return
+				counts.set(dueDate, (counts.get(dueDate) || 0) + 1)
+			})
+		})
+	} catch {
+		return counts
+	}
+	return counts
+}
+
+function getDueDotClass(cellDate) {
+	const today = new Date()
+	const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+	const startOfCell = new Date(cellDate.getFullYear(), cellDate.getMonth(), cellDate.getDate())
+	const diffMs = startOfCell.getTime() - startOfToday.getTime()
+	const diffDays = Math.round(diffMs / 86400000)
+	if (diffDays === 0 || diffDays === 1) return "calendar__dot--urgent"
+	if (diffDays >= 2 && diffDays <= 7) return "calendar__dot--soon"
+	return "calendar__dot--ok"
+}
+
+function getDueTasksForDate(isoDate) {
+	const tasks = []
+	if (kanbanBoard) {
+		kanbanBoard.querySelectorAll(".kanban__card").forEach((card) => {
+			const dueDate = card.dataset.dueDate || ""
+			if (dueDate !== isoDate) return
+			const text = card.querySelector("span")?.textContent || ""
+			if (text) tasks.push(text)
+		})
+		return tasks
+	}
+	const raw = localStorage.getItem(kanbanStorageKey)
+	if (!raw) return tasks
+	try {
+		const data = JSON.parse(raw)
+		if (!Array.isArray(data)) return tasks
+		data.forEach((list) => {
+			if (!list || !Array.isArray(list.cards)) return
+			list.cards.forEach((card) => {
+				if (!card || card.dueDate !== isoDate) return
+				if (card.text) tasks.push(card.text)
+			})
+		})
+	} catch {
+		return tasks
+	}
+	return tasks
 }
 
 if (calendarPrev) {
@@ -877,6 +990,9 @@ function saveKanban() {
 		return { title, cards }
 	})
 	localStorage.setItem(kanbanStorageKey, JSON.stringify(data))
+	if (calendarPage && !calendarPage.classList.contains("hidden")) {
+		renderCalendar()
+	}
 }
 
 function loadKanban() {
