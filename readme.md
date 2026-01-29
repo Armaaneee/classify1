@@ -35,3 +35,7 @@ Classify is a productivity hub for students. It combines class grade tracking, a
 
 - `classify-react/`: Vite + React version.
 - `OLD/`: Original static implementation (HTML/CSS/JS).
+
+## AI Declaration
+
+AI was used during the production of this project, but only to help me learn (especially when I was trying to refactor everything over to React) or when I desperately could not find the source of an error/debug. 
