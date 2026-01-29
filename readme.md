@@ -38,4 +38,4 @@ Classify is a productivity hub for students. It combines class grade tracking, a
 
 ## AI Declaration
 
-AI was used during the production of this project, but only to help me learn (especially when I was trying to refactor everything over to React) or when I desperately could not find the source of an error/debug. 
+AI was used during the production of this project, but only to help me learn (especially when I was trying to refactor everything over to React) or when I desperately could not find the source of an error/debug to nudge me in the right direction.
