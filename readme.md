@@ -17,7 +17,7 @@ Classify is a productivity hub for students. It combines class grade tracking, a
 ### Task Board (Kanban)
 - Create custom lists and reorder them with drag and drop.
 - Add, remove, and move cards between lists.
-- Each card can have a due date, set with a built-in date picker.
+- Each card can have a due date
 - Due dates are coloured as urgent (red - due today or tomorrow), soon (orange - due within 2-7 days), or normal (grey - due after 7 days).
 
 ### Calendar
